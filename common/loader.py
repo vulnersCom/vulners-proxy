@@ -1,9 +1,11 @@
-import typing
 import os
+import typing
+
 
 def import_module(base_module, submodule):
     module_name = base_module.__name__ + '.' + submodule
     return __import__(module_name, fromlist=[submodule])
+
 
 class ModuleLoader:
     def __init__(self):
