@@ -78,8 +78,6 @@ def estimate_typed_value(value):
         #     return tuple(map(_convert, node.elts))
         elif isinstance(node, ast.List):
             return list(map(_convert, node.elts))
-        elif isinstance(node, ast.NameConstant):
-            return node.value
         raise ValueError("malformed node or string: " + repr(node))
     try:
         return _convert(value, initial_string)
@@ -89,7 +87,7 @@ def estimate_typed_value(value):
 
 
 def prepare_cache_keys(keys, *args):
-    return {merge_value_to_key(key, *args): key for key in keys}
+    return {merge_value_to_key(key, *args):key for key in keys}
 
 
 def merge_value_to_key(*args):

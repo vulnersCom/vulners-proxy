@@ -20,9 +20,13 @@ vulners_api_key = config['vulners']['apikey']
 if not (log_file := log_opts.get('LogFile')):
     log_file = '/var/log/vulners_proxy/vulners_proxy.log'
 
+
 logging.basicConfig(
-    filename=log_file,
     format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-    level=getattr(logging, log_opts.get('LogLevel', 'INFO').upper())
+    level=getattr(logging, log_opts.get('LogLevel', 'INFO').upper()),
+    handlers = [
+        logging.FileHandler(log_file),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger('vulners_proxy')

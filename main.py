@@ -18,8 +18,7 @@ from routers import Router
 class Settings(BaseSettings):
     vulners_api_key: str = vulners_api_key
     vulners_host: str = "https://vulners.com"
-    cache_dir: str = "/tmp/vulners-proxy.cache/"
-    cache_timeout: int = 10
+    cache_dir: str = app_opts.get("cache_dir")
 
 
 settings = Settings()
@@ -31,6 +30,7 @@ cache = dc.Cache(
 session = AsyncClient(
     follow_redirects=True,
     http2=True,
+    timeout=app_opts.getint("cache_timeout"),
 )
 
 # Dynamic routers search in path 'routers' for easy plug-in addition
@@ -46,7 +46,7 @@ for router in router_instances:
     router.logger = logger
     app.include_router(router)
 # Timing middleware for debug purposes
-add_timing_middleware(app, record=logger.info, prefix="app", exclude="untimed")
+add_timing_middleware(app, record=logger.debug, prefix="app_timing", exclude="untimed")
 
 
 @app.get("/")
@@ -96,10 +96,11 @@ def main() -> None:
     )
     parser.parse_args()
     uvicorn.run(
-        app,
+        "main:app",
         host=app_opts["host"],
         port=app_opts.getint("port"),
         workers=app_opts.getint("workers"),
+        reload=app_opts.getboolean("reload")
     )
 
 
