@@ -13,12 +13,14 @@ from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.config import logger, app_opts, vulners_api_key
 from routers import Router
+from collections import defaultdict
 
 
 class Settings(BaseSettings):
     vulners_api_key: str = vulners_api_key
     vulners_host: str = "https://vulners.com"
     cache_dir: str = app_opts.get("cache_dir")
+    cache_timeout: int = app_opts.get("cache_timeout")
 
 
 settings = Settings()
@@ -33,6 +35,8 @@ session = AsyncClient(
     timeout=app_opts.getint("cache_timeout"),
 )
 
+statistics = defaultdict(lambda: 0)
+
 # Dynamic routers search in path 'routers' for easy plug-in addition
 router_instances = module_loader.load_classes(routers, Router)
 
@@ -44,6 +48,7 @@ for router in router_instances:
     router.cache = cache
     router.session = session
     router.logger = logger
+    router.statistics = statistics
     app.include_router(router)
 # Timing middleware for debug purposes
 add_timing_middleware(app, record=logger.debug, prefix="app_timing", exclude="untimed")
@@ -58,6 +63,10 @@ async def root():
 async def status():
     return {"message": "Under construction"}
 
+@app.get("/statistics")
+async def status():
+    return {"cached": statistics}
+
 
 @app.get("/clear")
 async def status():
@@ -68,7 +77,7 @@ async def status():
 # Default fallback route that just transfers data to Vulners backend and back
 @app.api_route("/api/v3/{dispatcher}/{dispatch_method}/", methods=["GET", "POST", "HEAD"])
 async def fallback_translator(dispatcher: str, dispatch_method: str, request: Request) -> StreamingResponse:
-    parameters, request_headers, endpoint_url = await prepare_request(settings, request)
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(settings, request)
     request_data = {
         'method': request.method,
          'url': endpoint_url,

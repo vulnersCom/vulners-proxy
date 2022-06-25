@@ -9,7 +9,7 @@ router = Router()
 
 @router.api_route("/api/v3/burp/software/", methods=["GET", "POST"])
 async def burp_software(request: Request):
-    parameters, request_headers, endpoint_url = await prepare_request(
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
     software_call_key = prepare_cache_keys(parameters)
@@ -23,6 +23,7 @@ async def burp_software(request: Request):
         vulners_results = vulners_response.json()
         router.cache.set(software_call_key, vulners_results, expire=router.settings.cache_timeout)
     else:
+        router.statistics[dispatcher] += 1
         vulners_results = cached_response
     return ORJSONResponse(
         content=vulners_results,
@@ -30,7 +31,7 @@ async def burp_software(request: Request):
 
 @router.api_route("/api/v3/burp/packages/", methods=["GET", "POST"])
 async def burp_packages(request: Request):
-    parameters, request_headers, endpoint_url = await prepare_request(
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
 
@@ -64,6 +65,7 @@ async def burp_packages(request: Request):
         router.cache.set_many(set_many_packages, expire=router.settings.cache_timeout)
         # Cache the data
     else:
+        router.statistics[dispatcher] += 1
         vulners_results = {
             "result": "OK",
             "data": {
