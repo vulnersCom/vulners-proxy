@@ -3,6 +3,8 @@ import hashlib
 from fastapi import Request
 from common.config import logger
 from json.decoder import JSONDecodeError
+from urllib.parse import urlparse
+
 
 
 async def prepare_request(settings, request: Request):
@@ -26,6 +28,7 @@ async def prepare_request(settings, request: Request):
     split_url = str(request.url).split(str(request.base_url))
     split_url[0] = settings.vulners_host
     endpoint_url = "/".join(split_url)
+    dispatcher = "/".join(urlparse(str(request.url)).path.split("/")[-3:-1])
     headers = {
         "User-Agent": "Vulners Proxy Version %s",
         **{
@@ -34,7 +37,7 @@ async def prepare_request(settings, request: Request):
             if key.lower().startswith(("accept", "x-vulners"))
         }
     }
-    return merged_parameters, headers, endpoint_url
+    return merged_parameters, headers, endpoint_url, dispatcher
 
 
 def estimate_typed_value(value):

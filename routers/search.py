@@ -10,7 +10,7 @@ router = Router()
 
 @router.api_route("/api/v3/search/id/", methods=["GET", "POST"])
 async def search_id(request: Request):
-    parameters, request_headers, endpoint_url = await prepare_request(
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
     id_list = parameters.get("id")
@@ -55,6 +55,7 @@ async def search_id(request: Request):
             documents_cache_prepared, expire=router.settings.cache_timeout
         )
     else:
+        router.statistics[dispatcher] += 1
         vulners_results = {
             "result": "OK",
             "data": {
