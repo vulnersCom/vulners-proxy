@@ -9,7 +9,7 @@ class Cache(_Cache):
     def get_many(
         self, keys, default=None, read=False, expire_time=False, tag=False, retry=False
     ):
-        results = dict()
+        results = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             lookup_calls = [
                 executor.submit(
@@ -28,9 +28,9 @@ class Cache(_Cache):
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             lookup_calls = [
                 executor.submit(
-                    self.set, key, key_values[key], expire, read, tag, retry
+                    self.set, key, value, expire, read, tag, retry
                 )
-                for key in key_values
+                for key, value in key_values.items()
             ]
             for future in concurrent.futures.as_completed(lookup_calls):
                 operation_results.append(future.result())

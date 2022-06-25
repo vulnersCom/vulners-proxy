@@ -13,45 +13,44 @@ async def search_id(request: Request):
     parameters, request_headers, endpoint_url = await prepare_request(
         router.settings, request
     )
-    id_list = []
-    if isinstance(parameters.get("id"), str) and parameters.get("id"):
-        id_list = [parameters.get("id")]
-    doc_cache_keys = prepare_cache_keys(id_list, parameters.get("fields"))
+    id_list = parameters.get("id")
+    if id_list and isinstance(id_list, str):
+        id_list = [id_list]
+    doc_cache_keys = prepare_cache_keys(id_list, fields := parameters.get("fields"))
     ref_cache_keys = prepare_cache_keys(id_list, "references")
-    get_documents_cache = router.cache.get_many(
+    cached_documents = router.cache.get_many(
         list(doc_cache_keys.keys()) + list(ref_cache_keys.keys())
     )
     documents_data = {
         doc_cache_keys[key]: value
-        for key, value in get_documents_cache.items()
+        for key, value in cached_documents.items()
         if key in doc_cache_keys
     }
     references_data = {
         ref_cache_keys[key]: value
-        for key, value in get_documents_cache.items()
+        for key, value in cached_documents.items()
         if key in ref_cache_keys
     }
-    uncached_id_set = set(id_list).difference(documents_data.keys())
-    parameters["id"] = list(uncached_id_set)
+    uncached_id_set = list(set(id_list).difference(documents_data.keys()))
     if uncached_id_set:
+        parameters["id"] = uncached_id_set
         # Perform minimized vulners request
         request = router.session.build_request(
-            method="POST", url=endpoint_url, json=parameters, headers=request_headers
+            method=request.method, url=endpoint_url, json=parameters, headers=request_headers
         )
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
         # Cache the data
         documents_cache_prepared = {
-            merge_value_to_key(document_id, parameters.get("fields")): data
+            merge_value_to_key(document_id, fields): data
             for document_id, data in vulners_results.get("data").get("documents", {}).items()
         }
-        references_cache_prepared = {
+        documents_cache_prepared.update({
             merge_value_to_key(document_id, "references"): data
             for document_id, data in vulners_results.get("data").get("references", {}).items()
-        }
+        })
         # Combine to the one document
-        documents_cache_prepared.update(references_cache_prepared)
         router.cache.set_many(
             documents_cache_prepared, expire=router.settings.cache_timeout
         )

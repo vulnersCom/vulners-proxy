@@ -87,7 +87,10 @@ def estimate_typed_value(value):
 
 
 def prepare_cache_keys(keys, *args):
-    return {merge_value_to_key(key, *args):key for key in keys}
+    return {
+        merge_value_to_key(key, *args): key
+        for key in keys
+    }
 
 
 def merge_value_to_key(*args):

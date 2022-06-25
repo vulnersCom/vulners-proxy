@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     vulners_api_key: str = vulners_api_key
     vulners_host: str = "https://vulners.com"
     cache_dir: str = app_opts.get("cache_dir")
+    cache_timeout: int = app_opts.getint("cache_timeout")
 
 
 settings = Settings()
