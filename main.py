@@ -1,3 +1,5 @@
+import logging
+import socket
 import argparse
 import uvicorn
 import routers
@@ -12,15 +14,15 @@ from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.config import logger, app_opts, vulners_api_key
+from common.statistic import statistics
 from routers import Router
-from collections import defaultdict
 
 
 class Settings(BaseSettings):
     vulners_api_key: str = vulners_api_key
     vulners_host: str = "https://vulners.com"
-    cache_dir: str = app_opts.get("cache_dir")
-    cache_timeout: int = app_opts.getint("cache_timeout")
+    cache_dir: str = app_opts.get("CacheDir")
+    cache_timeout: int = app_opts.getint("CacheTimeout")
 
 
 settings = Settings()
@@ -31,11 +33,8 @@ cache = dc.Cache(
 
 session = AsyncClient(
     follow_redirects=True,
-    http2=True,
-    timeout=app_opts.getint("cache_timeout"),
+    http2=True
 )
-
-statistics = defaultdict(lambda: 0)
 
 # Dynamic routers search in path 'routers' for easy plug-in addition
 router_instances = module_loader.load_classes(routers, Router)
@@ -61,7 +60,13 @@ async def root():
 
 @app.get("/status")
 async def status():
-    return {"message": "Under construction"}
+    try:
+        socket.setdefaulttimeout(3)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(('vulners.com', 443))
+        return {'api_connectivity': True}
+    except socket.error as ex:
+        logging.exception(ex)
+        return {'api_connectivity': False}
 
 
 @app.get("/statistics")

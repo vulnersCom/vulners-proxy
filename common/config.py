@@ -24,7 +24,7 @@ if not (log_file := log_opts.get('LogFile')):
 logging.basicConfig(
     format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
     level=getattr(logging, log_opts.get('LogLevel', 'INFO').upper()),
-    handlers = [
+    handlers=[
         logging.FileHandler(log_file),
         logging.StreamHandler()
     ]

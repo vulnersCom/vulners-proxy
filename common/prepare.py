@@ -6,8 +6,7 @@ from json.decoder import JSONDecodeError
 from urllib.parse import urlparse
 
 
-
-async def prepare_request(settings, request: Request):
+async def prepare_request(settings, request: Request) -> tuple:
     get_parameters = {
         param_name: estimate_typed_value(request.query_params.get(param_name).strip())
         for param_name in request.query_params
@@ -89,14 +88,14 @@ def estimate_typed_value(value):
         return initial_string
 
 
-def prepare_cache_keys(keys, *args):
+def prepare_cache_keys(keys: list, *args) -> dict:
     return {
         merge_value_to_key(key, *args): key
         for key in keys
     }
 
 
-def merge_value_to_key(*args):
+def merge_value_to_key(*args) -> str:
     hash_data = hashlib.md5()
     for arg in args:
         hash_data.update(str(arg).encode("utf-8"))

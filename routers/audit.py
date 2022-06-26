@@ -29,18 +29,22 @@ async def audit_audit(request: Request) -> ORJSONResponse:
     uncached_packages = list(set(packages_list).difference(packages_data.keys()))
 
     if uncached_packages:
-        parameters["packages"] = uncached_packages
+        parameters["package"] = uncached_packages
         request = router.session.build_request(
             method=request.method, url=endpoint_url, json=parameters, headers=request_headers
         )
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
+        response_packages = {**vulners_results.get("data").get("packages")}
+        response_packages.update({
+            key: 'empty'
+            for key in uncached_packages
+            if key not in response_packages
+        })
         prepared_cache = {
             merge_value_to_key(package, cache_args): data
-            for package, data in vulners_results.get("data")
-            .get("packages", {})
-            .items()
+            for package, data in response_packages.items()
         }
         router.cache.set_many(
             prepared_cache, expire=router.settings.cache_timeout
@@ -51,7 +55,11 @@ async def audit_audit(request: Request) -> ORJSONResponse:
             "result": "OK",
             "data": {"packages": {}},
         }
-    vulners_results["data"]["packages"].update(packages_data)
+    vulners_results["data"]["packages"].update({
+        key: value
+        for key, value in packages_data.items()
+        if value != 'empty'
+    })
     return ORJSONResponse(
         content=vulners_results,
     )
