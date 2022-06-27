@@ -21,3 +21,21 @@ async def get_api_key_info():
     )
     vulners_response = await main.session.send(vulners_request)
     return vulners_response.json().pop("data")
+
+
+async def get_cached_cost(license_type):
+    vulners_request = main.session.build_request(
+        method='GET',
+        url=f'https://{main.settings.vulners_host}/api/v3/credit/get_requests_cost',
+    )
+    cost_data = None
+    vulners_response = await main.session.send(vulners_request)
+    for license_costs in vulners_response.json()["data"]["costs"]:
+        if license_costs['license'] != license_type:
+            continue
+        cost_data = license_costs['costs']
+        break
+    result = 0
+    for endpoint, count in list(main.statistics.items()):
+        result += count * cost_data.get(endpoint, 0)
+    return result

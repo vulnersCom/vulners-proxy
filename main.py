@@ -13,7 +13,7 @@ from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.config import logger, app_opts, vulners_api_key
 from common.statistic import statistics
-from common.api_utils import check_api_connectivity, get_api_key_info
+from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
 from routers import Router
 
 
@@ -59,11 +59,14 @@ async def root():
 
 @app.get("/status")
 async def status():
+    api_key_info = await get_api_key_info()
     context = {
         'api_connectivity': check_api_connectivity(),
         'run_date': statistics.run_date,
         'statistic': statistics,
-        **await get_api_key_info()
+        'cache_size_mb': int(cache.volume() >> 10)/1024,
+        'saved_credits': await get_cached_cost(api_key_info['license_type']),
+        **api_key_info
     }
     return context
 
