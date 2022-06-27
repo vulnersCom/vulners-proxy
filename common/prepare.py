@@ -25,7 +25,7 @@ async def prepare_request(settings, request: Request) -> tuple:
         merged_parameters["apiKey"] = settings.vulners_api_key
     merged_parameters.update(parameters)
     split_url = str(request.url).split(str(request.base_url))
-    split_url[0] = settings.vulners_host
+    split_url[0] = f'https://{settings.vulners_host}'
     endpoint_url = "/".join(split_url)
     dispatcher = ".".join(urlparse(str(request.url)).path.split("/")[-3:-1])
     headers = {

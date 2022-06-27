@@ -1,3 +1,4 @@
+from datetime import date
 from common.disk_cache import Cache
 from common.config import app_opts
 
@@ -8,7 +9,9 @@ class Statistic(dict):
     def __init__(self):
         super().__init__()
         self.update(self.__cache.get('statistic') or {})
-        print(self.get_statistic())
+        if not (statistic_run_date := self.__cache.get('statistic_run_date')):
+            self.__cache.set('statistic_run_date', statistic_run_date := date.today())
+        self.run_date = statistic_run_date
 
     def __getitem__(self, item):
         return self.setdefault(item, 0)

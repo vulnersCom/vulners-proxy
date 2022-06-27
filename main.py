@@ -1,5 +1,3 @@
-import logging
-import socket
 import argparse
 import uvicorn
 import routers
@@ -15,12 +13,13 @@ from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.config import logger, app_opts, vulners_api_key
 from common.statistic import statistics
+from common.api_utils import check_api_connectivity, get_api_key_info
 from routers import Router
 
 
 class Settings(BaseSettings):
     vulners_api_key: str = vulners_api_key
-    vulners_host: str = "https://vulners.com"
+    vulners_host: str = "vulners.com"
     cache_dir: str = app_opts.get("CacheDir")
     cache_timeout: int = app_opts.getint("CacheTimeout")
 
@@ -60,13 +59,13 @@ async def root():
 
 @app.get("/status")
 async def status():
-    try:
-        socket.setdefaulttimeout(3)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(('vulners.com', 443))
-        return {'api_connectivity': True}
-    except socket.error as ex:
-        logging.exception(ex)
-        return {'api_connectivity': False}
+    context = {
+        'api_connectivity': check_api_connectivity(),
+        'run_date': statistics.run_date,
+        'statistic': statistics,
+        **await get_api_key_info()
+    }
+    return context
 
 
 @app.get("/statistics")
