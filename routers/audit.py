@@ -31,35 +31,61 @@ async def audit_audit(request: Request) -> ORJSONResponse:
     if uncached_packages:
         parameters["package"] = uncached_packages
         request = router.session.build_request(
-            method=request.method, url=endpoint_url, json=parameters, headers=request_headers
+            method=request.method,
+            url=endpoint_url,
+            json=parameters,
+            headers=request_headers,
         )
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
         response_packages = {**vulners_results.get("data").get("packages")}
-        response_packages.update({
-            key: 'empty'
-            for key in uncached_packages
-            if key not in response_packages
-        })
+        response_packages.update(
+            {key: "empty" for key in uncached_packages if key not in response_packages}
+        )
         prepared_cache = {
             merge_value_to_key(package, cache_args): data
             for package, data in response_packages.items()
         }
-        router.cache.set_many(
-            prepared_cache, expire=router.settings.cache_timeout
-        )
+        router.cache.set_many(prepared_cache, expire=router.settings.cache_timeout)
     else:
         router.statistics[dispatcher] += 1
         vulners_results = {
             "result": "OK",
-            "data": {"packages": {}},
+            "data": {
+                "packages": {},
+                "vulnerabilities": [],
+                "reasons": [],
+                "cumulativeFix": "",
+            },
         }
-    vulners_results["data"]["packages"].update({
-        key: value
-        for key, value in packages_data.items()
-        if value != 'empty'
-    })
+
+    result_data = vulners_results["data"]
+    result_data["packages"].update(
+        {key: value for key, value in packages_data.items() if value != "empty"}
+    )
+
+    result_data["vulnerabilities"] = [
+        bulletin_id
+        for package in result_data["packages"].values()
+        for bulletin_id in package.keys()
+    ]
+
+    result_data["reasons"] = [
+        reason
+        for package in result_data["packages"].values()
+        for reasons in package.values()
+        for reason in reasons
+    ]
+
+    cumulative_fix = []
+    for reason in result_data["reasons"]:
+        for word in reason["fix"].split():
+            if word in cumulative_fix:
+                continue
+            cumulative_fix.append(word)
+    result_data["cumulativeFix"] = " ".join(cumulative_fix)
+
     return ORJSONResponse(
         content=vulners_results,
     )
