@@ -27,7 +27,7 @@ async def prepare_request(settings, request: Request) -> tuple:
     split_url = str(request.url).split(str(request.base_url))
     split_url[0] = settings.vulners_host
     endpoint_url = "/".join(split_url)
-    dispatcher = "/".join(urlparse(str(request.url)).path.split("/")[-3:-1])
+    dispatcher = ".".join(urlparse(str(request.url)).path.split("/")[-3:-1])
     headers = {
         "User-Agent": "Vulners Proxy Version %s",
         **{
