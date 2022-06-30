@@ -4,6 +4,9 @@ import routers
 import common.disk_cache as dc
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi_utils.timing import add_timing_middleware
 from pydantic import BaseSettings
 from starlette.background import BackgroundTask
@@ -24,22 +27,23 @@ class Settings(BaseSettings):
     cache_timeout: int = app_opts.getint("CacheTimeout")
 
 
+templates = Jinja2Templates(directory="frontend/templates")
+
 settings = Settings()
 module_loader = ModuleLoader()
 cache = dc.Cache(
     directory=settings.cache_dir,
 )
 
-session = AsyncClient(
-    follow_redirects=True,
-    http2=True
-)
+session = AsyncClient(follow_redirects=True, http2=True)
 
 # Dynamic routers search in path 'routers' for easy plug-in addition
 router_instances = module_loader.load_classes(routers, Router)
 
 # Application init
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
 for router in router_instances:
     # Pass shared commons to the routers and add them to the core app
     router.settings = settings
@@ -57,18 +61,21 @@ async def root():
     return {"message": "Vulners Proxy App"}
 
 
-@app.get("/status")
-async def status():
+@app.get("/status", response_class=HTMLResponse)
+async def status(request: Request):
     api_key_info = await get_api_key_info(session, settings)
     context = {
-        'api_connectivity': check_api_connectivity(settings),
-        'run_date': statistics.run_date,
-        'statistic': statistics,
-        'cache_size_mb': int(cache.volume() >> 10)/1024,
-        'saved_credits': await get_cached_cost(api_key_info['license_type'], session, settings, statistics),
-        **api_key_info
+        "request": request,
+        "api_connectivity": check_api_connectivity(settings),
+        "run_date": statistics.run_date,
+        "statistic": statistics,
+        "cache_size_mb": int(cache.volume() >> 10) / 1024,
+        "saved_credits": await get_cached_cost(
+            api_key_info["license_type"], session, settings, statistics
+        ),
+        **api_key_info,
     }
-    return context
+    return templates.TemplateResponse("status.html", context)
 
 
 @app.get("/statistics")
@@ -83,14 +90,20 @@ async def status():
 
 
 # Default fallback route that just transfers data to Vulners backend and back
-@app.api_route("/api/v3/{dispatcher}/{dispatch_method}/", methods=["GET", "POST", "HEAD"])
-async def fallback_translator(dispatcher: str, dispatch_method: str, request: Request) -> StreamingResponse:
-    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(settings, request)
+@app.api_route(
+    "/api/v3/{dispatcher}/{dispatch_method}/", methods=["GET", "POST", "HEAD"]
+)
+async def fallback_translator(
+    dispatcher: str, dispatch_method: str, request: Request
+) -> StreamingResponse:
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
+        settings, request
+    )
     request_data = {
-        'method': request.method,
-         'url': endpoint_url,
-        'headers': request_headers,
-        'params' if request.method in ('GET', 'HEAD') else 'json': parameters
+        "method": request.method,
+        "url": endpoint_url,
+        "headers": request_headers,
+        "params" if request.method in ("GET", "HEAD") else "json": parameters,
     }
     vulners_request = session.build_request(**request_data)
     vulners_response = await session.send(vulners_request, stream=True)
@@ -117,7 +130,7 @@ def main() -> None:
         host=app_opts["host"],
         port=app_opts.getint("port"),
         workers=app_opts.getint("workers"),
-        reload=app_opts.getboolean("reload")
+        reload=app_opts.getboolean("reload"),
     )
 
 

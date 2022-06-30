@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Vulners Proxy - status page</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="never">
+    <meta name="description" content="Vulners proxy status page">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+
+</head>
+<body>
+    <div class="bg"></div>
+
+    <header>
+        <div>
+            <img class="logo" src="/static/img/logo.svg"/>
+            <div class="header-name">Proxy status page</div>
+        </div>
+        <a class="btn" href="https://vulners.com/login" target="_blank">SIGN IN</a>
+    </header>
+
+    <section>
+        <div class="status">
+            {% if api_connectivity %}
+                <img class="status-on" src="/static/img/Tick.svg"/>
+                <h1>API is Active</h1>
+            {% else %}
+                <img class="status-off" src="/static/img/Warning.svg" />
+                <h1>API is Not Active</h1>
+            {% endif %}
+            <div class="subtitle">Run date: {{run_date}}</div>
+
+
+            <div class="tags">
+                <div class="tag">
+                    <div class="value">{{saved_credits}}</div>
+                    <div class="title">Saved credits</div>
+                </div>
+                <div class="tag">
+                    <div class="value">{{credit}}</div>
+                    <div class="title">License credits left</div>
+                </div>
+                <div class="tag">
+                    <div class="value">{{cache_size_mb}}</div>
+                    <div class="title">Cache size Mb</div>
+                </div>
+            </div>
+        </div>
+
+        {% if statistic %}
+            <h2>Actions statistic</h2>
+            <div class="statistic">
+                <table>
+                    <tbody>
+                        {% for name,value in statistic.items() %}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td>{{value}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        {% if license_type %}
+            <h2>Current License</h2>
+            <div class="license">
+                <div class="license-status {% if active %}on{% else %}off{% endif%}">
+                    <div class="badge"></div>
+                    <div>{{license_type}}</div>
+                    <div class="license-subtitle">&nbsp;- {% if active %}Active{% else %}Not Active{% endif%}</div>
+                </div>
+                <div class="license-data">Exp: {{license_expiration}}</div>
+            </div>
+        {% endif %}
+
+    </section>
+    <footer>
+        <div>
+            @<span id="year"></span>&nbsp;Vulners Inc.
+        </div>
+
+        <div class="menu">
+            <a target="_blank" href="https://vulners.com/docs">Docs</a>
+            <a target="_blank" href="https://vulners.com/company/contacts">Contacts</a>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById("year").innerText=new Date().getFullYear().toString();
+    </script>
+</body>
+</html>
