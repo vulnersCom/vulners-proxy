@@ -59,13 +59,13 @@ async def root():
 
 @app.get("/status")
 async def status():
-    api_key_info = await get_api_key_info()
+    api_key_info = await get_api_key_info(session, settings)
     context = {
-        'api_connectivity': check_api_connectivity(),
+        'api_connectivity': check_api_connectivity(settings),
         'run_date': statistics.run_date,
         'statistic': statistics,
         'cache_size_mb': int(cache.volume() >> 10)/1024,
-        'saved_credits': await get_cached_cost(api_key_info['license_type']),
+        'saved_credits': await get_cached_cost(api_key_info['license_type'], session, settings, statistics),
         **api_key_info
     }
     return context
