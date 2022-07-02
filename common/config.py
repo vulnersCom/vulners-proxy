@@ -10,7 +10,7 @@ if DEBUG := False:
 
 CONF_PATH = os.path.join(*conf_catalog, 'example_vulners_proxy.conf')
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser(inline_comment_prefixes=('#', ))
 config.read(CONF_PATH)
 
 log_opts = config['logging']

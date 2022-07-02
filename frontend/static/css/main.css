@@ -27,7 +27,7 @@ a:hover {
     background: rgba(0, 0, 0, 0.04);
 }
 
-
+/* Header */
 header {
     position: relative;
     padding: 20px 60px;
@@ -58,6 +58,7 @@ section {
     padding: 60px;
 }
 
+/* Tags */
 .tags {
     display: flex;
     justify-content: space-between;
@@ -87,17 +88,29 @@ section {
     color: #888
 }
 
+/* Error */
+.error {
+    background: #FFEFEF;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 40px;
+}
+.error h2 {
+    margin-top: 0;
+}
+
+/* Status */
 .status {
     text-align: center;
 }
-.status-on {
+#status-on img {
     background: #eaf9f7;
     color: #82C4BB;
     width: 100px;
     height: 100px;
     border-radius: 100px;
 }
-.status-off{
+#status-off img{
     background: rgb(255, 239, 239);
     color: #ff3306;
     width: 100px;
@@ -114,6 +127,7 @@ section {
     margin-bottom: 60px;
 }
 
+/* Statistic */
 .statistic {
     box-shadow: 0px 5px 25px rgb(92 106 126 / 10%);
     padding: 20px 20px 10px;
@@ -139,6 +153,7 @@ tr:last-child td {
     border-bottom: none;
 }
 
+/* License */
 .license {
     display: flex;
     flex-direction: row;
@@ -176,10 +191,11 @@ tr:last-child td {
 .license-status.off .badge {
     background: #ff3306;
 }
-.license-type {
-
+.license-data {
+    color: #7e7e7e;
 }
 
+/* Footer */
 footer {
     position: relative;
     background: #F9F9F9;

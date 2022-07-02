@@ -14,6 +14,7 @@ from httpx import AsyncClient
 from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
+from common.error import VulnersProxyException
 from common.config import logger, app_opts, vulners_api_key
 from common.statistic import statistics
 from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     vulners_host: str = "vulners.com"
     cache_dir: str = app_opts.get("CacheDir")
     cache_timeout: int = app_opts.getint("CacheTimeout")
+    api_cache_timeout: int = app_opts.getint("ApiCacheTimeout")
 
 
 templates = Jinja2Templates(directory="frontend/templates")
@@ -56,31 +58,28 @@ for router in router_instances:
 add_timing_middleware(app, record=logger.debug, prefix="app_timing", exclude="untimed")
 
 
-@app.get("/")
-async def root():
-    return {"message": "Vulners Proxy App"}
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("status.html", {"request": request})
 
 
-@app.get("/status", response_class=HTMLResponse)
-async def status(request: Request):
-    api_key_info = await get_api_key_info(session, settings)
-    context = {
-        "request": request,
+@app.get("/proxy/status")
+async def status():
+    try:
+        api_key_info = await get_api_key_info(cache, session, settings)
+        saved_credits = await get_cached_cost(
+            cache, api_key_info.get("license_type"), session, settings, statistics
+        )
+    except VulnersProxyException as err:
+        return err
+    return {
         "api_connectivity": check_api_connectivity(settings),
         "run_date": statistics.run_date,
         "statistic": statistics,
         "cache_size_mb": int(cache.volume() >> 10) / 1024,
-        "saved_credits": await get_cached_cost(
-            api_key_info["license_type"], session, settings, statistics
-        ),
+        "saved_credits": saved_credits,
         **api_key_info,
     }
-    return templates.TemplateResponse("status.html", context)
-
-
-@app.get("/statistics")
-async def status():
-    return {"cached": statistics}
 
 
 @app.get("/clear")
