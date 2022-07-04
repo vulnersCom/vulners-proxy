@@ -20,6 +20,7 @@ vulners_api_key = config['vulners']['apikey']
 if not (log_file := log_opts.get('LogFile')):
     log_file = '/var/log/vulners_proxy/vulners_proxy.log'
 
+os.makedirs(log_file.replace(os.path.basename(log_file), ''), exist_ok=True)
 
 logging.basicConfig(
     format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
