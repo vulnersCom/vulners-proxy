@@ -76,7 +76,7 @@ async def status():
         "api_connectivity": check_api_connectivity(settings),
         "run_date": statistics.run_date,
         "statistic": statistics,
-        "cache_size_mb": int(cache.volume() >> 10) / 1024,
+        "cache_size_mb": round(int(cache.volume() >> 10) / 1024, 2),
         "saved_credits": saved_credits,
         **api_key_info,
     }
