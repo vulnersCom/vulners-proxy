@@ -61,7 +61,7 @@ async def audit_audit(request: Request) -> ORJSONResponse:
         }
 
     result_data = vulners_results["data"]
-    result_data["packages"].update(
+    result_data.setdefault("packages", {}).update(
         {key: value for key, value in packages_data.items() if value != "empty"}
     )
 
