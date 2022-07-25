@@ -5,7 +5,7 @@ import configparser
 
 conf_catalog = '/etc/vulners_proxy',
 
-if DEBUG := True:
+if DEBUG := False:
     conf_catalog = os.path.dirname(__file__), os.path.pardir
 
 CONF_PATH = os.path.join(*conf_catalog, 'vulners_proxy.conf')
