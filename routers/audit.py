@@ -39,7 +39,7 @@ async def audit_audit(request: Request) -> ORJSONResponse:
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
-        response_packages = {**vulners_results.get("data").get("packages")}
+        response_packages = {**vulners_results.get("data").get("packages", {})}
         response_packages.update(
             {key: "empty" for key in uncached_packages if key not in response_packages}
         )
