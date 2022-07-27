@@ -56,7 +56,12 @@ async def audit_audit(request: Request) -> ORJSONResponse:
                 "packages": {},
                 "vulnerabilities": [],
                 "reasons": [],
-                "cumulativeFix": "",
+                "cvss": {
+                    "score": 0.0,
+                    "vector": "NONE"
+                },
+                "cvelist": [],
+                "cumulativeFix": ""
             },
         }
 
