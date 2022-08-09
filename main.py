@@ -130,6 +130,7 @@ def main() -> None:
         port=app_opts.getint("port"),
         workers=app_opts.getint("workers"),
         reload=app_opts.getboolean("reload"),
+        proxy_headers=True
     )
 
 

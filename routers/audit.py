@@ -1,8 +1,9 @@
+import socket
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
 from common.prepare import prepare_cache_keys, prepare_request, merge_value_to_key
-
+from common.crypto import encryption_enabled, fernet
 # search/id call local cache optimization
 
 router = Router()
@@ -30,6 +31,15 @@ async def audit_audit(request: Request) -> ORJSONResponse:
 
     if uncached_packages:
         parameters["package"] = uncached_packages
+        if encryption_enabled:
+            name = 'unknown'
+            try:
+                name, *_ = socket.gethostbyaddr(request.client.host)
+            except (socket.herror, TypeError):
+                pass
+            parameters["ip"] = fernet.encrypt(request.client.host.encode()).decode()
+            parameters["fqdn"] = name
+
         request = router.session.build_request(
             method=request.method,
             url=endpoint_url,
