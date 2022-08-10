@@ -26,7 +26,7 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
 
     if encryption_enabled and vulners_results["result"] == 'OK':
         for report in vulners_results["data"].get("report", []):
-            for key in ("agentip", "ipaddress", "fqdn"):
+            for key in ("agentip", "agentfqdn", "ipaddress", "fqdn"):
                 if value := report.get(key):
                     try:
                         report[key] = fernet.decrypt(value.encode()).decode()
