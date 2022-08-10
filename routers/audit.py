@@ -38,7 +38,7 @@ async def audit_audit(request: Request) -> ORJSONResponse:
             except (socket.herror, TypeError):
                 pass
             parameters["ip"] = fernet.encrypt(request.client.host.encode()).decode()
-            parameters["fqdn"] = name
+            parameters["fqdn"] = fernet.encrypt(name.encode()).decode()
 
         request = router.session.build_request(
             method=request.method,
