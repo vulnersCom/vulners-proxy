@@ -9,7 +9,7 @@ from common.crypto import encryption_enabled, fernet
 router = Router()
 
 
-@router.api_route("/api/v3/reports/vulnsreport/", methods=["GET"])
+@router.api_route("/api/v3/reports/vulnsreport/", methods=["POST"])
 async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
@@ -17,7 +17,7 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
-        params=parameters,
+        json=parameters,
         headers=request_headers,
     )
     vulners_response = await router.session.send(request)
