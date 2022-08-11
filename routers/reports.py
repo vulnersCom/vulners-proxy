@@ -1,9 +1,9 @@
-import cryptography.fernet
+import binascii
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
 from common.prepare import prepare_request
-from common.crypto import encryption_enabled, fernet
+from common.crypto import encryption_enabled, decrypt
 
 
 router = Router()
@@ -29,8 +29,8 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
             for key in ("agentip", "agentfqdn", "ipaddress", "fqdn"):
                 if value := report.get(key):
                     try:
-                        report[key] = fernet.decrypt(value.encode()).decode()
-                    except cryptography.fernet.InvalidToken:
+                        report[key] = decrypt(value)
+                    except binascii.Error:
                         continue
     return ORJSONResponse(
         content=vulners_results,

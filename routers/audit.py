@@ -3,8 +3,8 @@ from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
 from common.prepare import prepare_cache_keys, prepare_request, merge_value_to_key
-from common.crypto import encryption_enabled, fernet
-# search/id call local cache optimization
+from common.crypto import encryption_enabled, encrypt
+
 
 router = Router()
 
@@ -37,8 +37,11 @@ async def audit_audit(request: Request) -> ORJSONResponse:
                 name, *_ = socket.gethostbyaddr(request.client.host)
             except (socket.herror, TypeError):
                 pass
-            parameters["ip"] = fernet.encrypt(request.client.host.encode()).decode()
-            parameters["fqdn"] = fernet.encrypt(name.encode()).decode()
+
+            parameters.update({
+                "ip": encrypt(request.client.host),
+                "fqdn": encrypt(name)
+            })
 
         request = router.session.build_request(
             method=request.method,
