@@ -40,10 +40,10 @@ def encrypt_parameters(request: Request, parameters: dict, objects: list = None)
         return parameters
     host = request.client.host
     for obj in objects:
-        if obj in ('ip', 'ipaddress'):
+        if obj in ("ip", "ipaddress"):
             parameters.update({"ip": encrypt(host)})
-        if obj == 'fqdn':
-            name = 'unknown'
+        if obj == "fqdn":
+            name = "unknown"
             try:
                 name, *_ = socket.gethostbyaddr(host)
             except (socket.herror, TypeError):
