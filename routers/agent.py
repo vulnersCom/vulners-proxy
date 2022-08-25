@@ -15,7 +15,7 @@ async def agent_update(request: Request) -> ORJSONResponse:
     )
 
     if encryption_enabled:
-        encrypt_parameters(request, parameters, objects=['ip', 'fqdn', 'macaddress'])
+        encrypt_parameters(request, parameters, objects=['ipaddress', 'fqdn', 'macaddress'])
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
@@ -36,7 +36,7 @@ async def agent_register(request: Request) -> ORJSONResponse:
         router.settings, request
     )
     if encryption_enabled:
-        encrypt_parameters(request, parameters, objects=['ipaddress', 'fqdn'])
+        encrypt_parameters(request, parameters, objects=['ip'])
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
