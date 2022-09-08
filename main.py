@@ -2,6 +2,7 @@ import argparse
 import uvicorn
 import routers
 import common.disk_cache as dc
+from typing import Union
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -10,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_utils.timing import add_timing_middleware
 from pydantic import BaseSettings
 from starlette.background import BackgroundTask
-from httpx import AsyncClient
 from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
@@ -19,6 +19,7 @@ from common.config import logger, app_opts, vulners_api_key
 from common.statistic import statistics
 from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
 from routers import Router
+from httpx_client import HttpXClient
 
 
 class Settings(BaseSettings):
@@ -37,7 +38,7 @@ cache = dc.Cache(
     directory=settings.cache_dir,
 )
 
-session = AsyncClient(follow_redirects=True, http2=True)
+session = HttpXClient(follow_redirects=True, http2=True)
 
 # Dynamic routers search in path 'routers' for easy plug-in addition
 router_instances = module_loader.load_classes(routers, Router)
@@ -64,7 +65,7 @@ async def root(request: Request):
 
 
 @app.get("/proxy/status")
-async def status():
+async def status() -> Union[dict, VulnersProxyException]:
     try:
         api_key_info = await get_api_key_info(cache, session, settings)
         saved_credits = await get_cached_cost(
@@ -83,7 +84,7 @@ async def status():
 
 
 @app.get("/clear")
-async def status():
+async def status() -> dict:
     cache.clear()
     return {"message": f"Purged {cache.clear()} records"}
 
@@ -130,7 +131,7 @@ def main() -> None:
         port=app_opts.getint("port"),
         workers=app_opts.getint("workers"),
         reload=app_opts.getboolean("reload"),
-        proxy_headers=True
+        proxy_headers=True,
     )
 
 

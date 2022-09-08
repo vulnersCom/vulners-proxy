@@ -35,7 +35,7 @@ def decrypt(crypt_value: str) -> str:
     return (bytes(buf[:len_decrypted]) + decrypter.finalize()).decode().strip("\0")
 
 
-def encrypt_parameters(request: Request, parameters: dict, objects: list = None) -> dict:
+def encrypt_parameters(request: Request, parameters: dict, objects: Union[list, tuple] = None) -> dict:
     if not objects:
         return parameters
     host = request.client.host

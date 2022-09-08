@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.api_route("/api/v3/search/id/", methods=["GET", "POST"])
-async def search_id(request: Request):
+async def search_id(request: Request) -> ORJSONResponse:
     parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
@@ -36,7 +36,10 @@ async def search_id(request: Request):
         parameters["id"] = uncached_id_set
         # Perform minimized vulners request
         request = router.session.build_request(
-            method=request.method, url=endpoint_url, json=parameters, headers=request_headers
+            method=request.method,
+            url=endpoint_url,
+            json=parameters,
+            headers=request_headers,
         )
         vulners_response = await router.session.send(request)
         vulners_response.read()
