@@ -44,6 +44,8 @@ async def agent_register(request: Request) -> ORJSONResponse:
         headers=request_headers,
     )
     vulners_response = await router.session.send(request)
+    vulners_response.read()
+    vulners_results = vulners_response.json()
     return ORJSONResponse(
-        content=vulners_response.read(),
+        content=vulners_results,
     )
