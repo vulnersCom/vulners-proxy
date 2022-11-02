@@ -1,6 +1,7 @@
 import ast
 import hashlib
 from fastapi import Request
+from common import __version__
 from common.config import logger
 from json.decoder import JSONDecodeError
 from urllib.parse import urlparse
@@ -29,7 +30,7 @@ async def prepare_request(settings, request: Request) -> tuple:
     endpoint_url = "/".join(split_url)
     dispatcher = ".".join(urlparse(str(request.url)).path.split("/")[-3:-1])
     headers = {
-        "User-Agent": "Vulners Proxy Version %s",
+        "User-Agent": "Vulners Proxy Version %s" % __version__,
         **{
             key: request.headers[key]
             for key in request.headers
