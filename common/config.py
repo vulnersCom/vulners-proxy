@@ -5,7 +5,8 @@ import configparser
 
 conf_catalog = '/etc/vulners_proxy',
 
-if DEBUG := False:
+DEBUG=False
+if DEBUG:
     conf_catalog = os.path.dirname(__file__), os.path.pardir
 
 CONF_PATH = os.path.join(*conf_catalog, 'vulners_proxy.conf')
@@ -16,8 +17,10 @@ config.read(CONF_PATH)
 log_opts = config['logging']
 app_opts = config['app']
 vulners_api_key = config['vulners']['apikey']
+vulners_tag_to_filter = config['vulners']['tagtofilter']
 
-if not (log_file := log_opts.get('LogFile')):
+log_file = log_opts.get('LogFile')
+if not log_file:
     log_file = '/var/log/vulners_proxy/vulners_proxy.log'
 
 os.makedirs(os.path.split(log_file)[0], exist_ok=True)

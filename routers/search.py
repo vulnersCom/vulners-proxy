@@ -16,7 +16,8 @@ async def search_id(request: Request) -> ORJSONResponse:
     id_list = parameters.get("id")
     if id_list and isinstance(id_list, str):
         id_list = [id_list]
-    doc_cache_keys = prepare_cache_keys(id_list, fields := parameters.get("fields"))
+    fields = parameters.get("fields")
+    doc_cache_keys = prepare_cache_keys(id_list, fields)
     ref_cache_keys = prepare_cache_keys(id_list, "references")
     cached_documents = router.cache.get_many(
         list(doc_cache_keys.keys()) + list(ref_cache_keys.keys())

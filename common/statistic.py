@@ -9,8 +9,10 @@ class Statistic(dict):
     def __init__(self):
         super().__init__()
         self.update(self.__cache.get('statistic') or {})
-        if not (statistic_run_date := self.__cache.get('statistic_run_date')):
-            self.__cache.set('statistic_run_date', statistic_run_date := date.today())
+        statistic_run_date = self.__cache.get('statistic_run_date')
+        if not statistic_run_date:
+            statistic_run_date = date.today()
+            self.__cache.set('statistic_run_date', statistic_run_date)
         self.run_date = statistic_run_date
 
     def __getitem__(self, item):
@@ -22,7 +24,8 @@ class Statistic(dict):
 
     def get_statistic(self) -> str:
         statistic = ''
-        if not (keys := [len(key) for key in self]):
+        keys = [len(key) for key in self]
+        if not keys:
             return statistic
         max_len = max(keys)
         for key, value in self.items():

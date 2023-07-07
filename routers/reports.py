@@ -1,6 +1,8 @@
 import binascii
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
+
+from main import settings
 from routers import Router
 from common.prepare import prepare_request
 from common.crypto import encryption_enabled, decrypt
@@ -14,6 +16,12 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
+
+    if settings.vulners_tag_to_filter:
+        if "filter" in parameters:
+            parameters['filter']['tags'] = [settings.vulners_tag_to_filter] + parameters['filter'].get('tags', [])
+        else:
+            parameters['filter'] = {'tags': [settings.vulners_tag_to_filter]}
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
@@ -27,7 +35,8 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     if encryption_enabled and vulners_results["result"] == 'OK':
         for report in vulners_results["data"].get("report", []):
             for key in ("agentip", "agentfqdn", "ipaddress", "fqdn"):
-                if value := report.get(key):
+                value = report.get(key)
+                if value:
                     try:
                         report[key] = decrypt(value)
                     except binascii.Error:

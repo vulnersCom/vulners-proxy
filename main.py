@@ -15,7 +15,7 @@ from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.error import VulnersProxyException
-from common.config import logger, app_opts, vulners_api_key
+from common.config import logger, app_opts, vulners_api_key, vulners_tag_to_filter
 from common.statistic import statistics
 from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
 from routers import Router
@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     cache_dir: str = app_opts.get("CacheDir")
     cache_timeout: int = app_opts.getint("CacheTimeout")
     api_cache_timeout: int = app_opts.getint("ApiCacheTimeout")
+    vulners_tag_to_filter: str = vulners_tag_to_filter
+
 
 
 templates = Jinja2Templates(directory="frontend/templates")
