@@ -5,7 +5,7 @@ import configparser
 
 conf_catalog = '/etc/vulners_proxy',
 
-DEBUG=False
+DEBUG = False
 if DEBUG:
     conf_catalog = os.path.dirname(__file__), os.path.pardir
 
@@ -17,7 +17,8 @@ config.read(CONF_PATH)
 log_opts = config['logging']
 app_opts = config['app']
 vulners_api_key = config['vulners']['apikey']
-vulners_tag_to_filter = config['vulners']['tagtofilter']
+vulners_report_filter_enabled = config['vulners'].get('enablereportfilter', '0')
+vulners_report_filter = config['vulners'].get('reportfiltertag', '')
 
 log_file = log_opts.get('LogFile')
 if not log_file:

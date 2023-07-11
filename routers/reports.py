@@ -17,11 +17,11 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
         router.settings, request
     )
 
-    if settings.vulners_tag_to_filter:
+    if settings.vulners_report_filter_enabled:
         if "filter" in parameters:
-            parameters['filter']['tags'] = [settings.vulners_tag_to_filter] + parameters['filter'].get('tags', [])
+            parameters['filter']['tags'] = [settings.vulners_report_filter] + parameters['filter'].get('tags', [])
         else:
-            parameters['filter'] = {'tags': [settings.vulners_tag_to_filter]}
+            parameters['filter'] = {'tags': [settings.vulners_report_filter]}
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,

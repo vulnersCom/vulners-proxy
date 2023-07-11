@@ -5,6 +5,10 @@ Vulners proxy is a caching proxy that allows optimizing the number of API-reques
 
 # Installation
 
+## Prerequisites
+
+Python 3.7+
+
 ## Debian based OS
 First add vulners.com pubkey:
 ```
@@ -22,7 +26,7 @@ apt-get update && apt-get install vulners-proxy
 
 ## Source code
 You can clone source code and run server using Python. 
-* Install python3 and python3-pip
+* Install python 3.7 or later and python3-pip
 * Clone source code from repository
 * Install requirements.txt with ```pip install -U -r requirements.txt```
 * You can run server manually with command 
@@ -64,12 +68,16 @@ EnableEncryption = 0                    # 0 - disabled, 1 - enabled
 
 [vulners]
 ApiKey = YOUR_SECRET
+EnableReportFilter = 0                  # 0 - disabled, 1 - enabled
+ReportFilterTag = ""                    # Vulners Agent tag, that will be used to filter reporting API results
 ```
 You can set logging settings, proxy server host and port, cache directory and timeout.
 
-Also proxy can encrypt IP address and FQDN of your agents before forwarding them to Vulners. To enable this feature set secret key and EnableEncryption flag to 1.
+Also, proxy can encrypt IP address and FQDN of your agents before forwarding them to Vulners. To enable this feature set secret key and EnableEncryption flag to 1.
 
-**NB.** While encryption is enabled you won't be able to see readable agent identificators in Linux Scanner dashboard, only hashes. If you want to get nice reports you should config custom dashboard on your side of proxy. For example, you can use Defect Dojo with Vulners plugin.
+**NB.** While encryption is enabled you won't be able to see readable agent identifiers in Linux Scanner dashboard, only hashes. If you want to get nice reports you should config custom dashboard on your side of proxy. For example, you can use Defect Dojo with Vulners plugin.
+
+You can filter Vulners Agents reports for agents behind your Proxy. To do this, give the agents a unique tag and write it in the report filter configuration on the proxy.
 
 # Proxy start
 Run service
