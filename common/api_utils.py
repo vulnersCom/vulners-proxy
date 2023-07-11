@@ -17,7 +17,8 @@ def check_api_connectivity(settings):
 
 
 async def get_api_key_info(cache, session, settings):
-    if not (result := cache.get(f"__{settings.vulners_api_key}")):
+    result = cache.get(f"__{settings.vulners_api_key}")
+    if not result:
         vulners_request = session.build_request(
             method="GET",
             url=f"https://{settings.vulners_host}/api/v3/apiKey/info/",
@@ -40,7 +41,8 @@ async def get_api_key_info(cache, session, settings):
 
 
 async def get_cached_cost(cache, license_type, session, settings, statistics):
-    if not (cost_data := cache.get(f"__{license_type}_costs")):
+    cost_data = cache.get(f"__{license_type}_costs")
+    if not cost_data:
         vulners_request = session.build_request(
             method="GET",
             url=f"https://{settings.vulners_host}/api/v3/credit/get_requests_cost",

@@ -2,7 +2,7 @@ import argparse
 import uvicorn
 import routers
 import common.disk_cache as dc
-from typing import Union
+from typing import Union, Any
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -15,7 +15,8 @@ from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.error import VulnersProxyException
-from common.config import logger, app_opts, vulners_api_key
+from common.config import logger, app_opts, vulners_api_key, \
+    vulners_report_filter, vulners_report_filter_enabled
 from common.statistic import statistics
 from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
 from routers import Router
@@ -28,6 +29,14 @@ class Settings(BaseSettings):
     cache_dir: str = app_opts.get("CacheDir")
     cache_timeout: int = app_opts.getint("CacheTimeout")
     api_cache_timeout: int = app_opts.getint("ApiCacheTimeout")
+    vulners_report_filter_enabled: bool = vulners_report_filter_enabled
+    vulners_report_filter: str = vulners_report_filter
+
+    def __init__(self, **values: Any):
+        super().__init__(**values)
+        if self.vulners_report_filter_enabled and not self.vulners_report_filter:
+            logger.warning("Report filter is enabled, but filter tag is not specified. Your reports will be empty")
+
 
 
 templates = Jinja2Templates(directory="frontend/templates")
