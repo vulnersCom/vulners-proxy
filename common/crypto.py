@@ -41,15 +41,15 @@ def encrypt_parameters(request: Request, parameters: dict, objects: Union[list, 
     host = request.client.host
     for obj in objects:
         if obj in ("ip", "ipaddress"):
-            parameters.update({"ip": encrypt(host)})
-        if obj == "fqdn":
-            name = "unknown"
+            parameters.update({obj: host})
+        elif obj == "fqdn":
             try:
                 name, *_ = socket.gethostbyaddr(host)
             except (socket.herror, TypeError):
-                pass
-            parameters.update({"fqdn": encrypt(name)})
+                name = "unknown"
+            parameters.update({"fqdn": name})
         obj_param = parameters.get(obj)
         if obj_param:
             parameters.update({obj: encrypt(obj_param)})
     return parameters
+
