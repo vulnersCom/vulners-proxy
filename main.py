@@ -38,7 +38,6 @@ class Settings(BaseSettings):
             logger.warning("Report filter is enabled, but filter tag is not specified. Your reports will be empty")
 
 
-
 templates = Jinja2Templates(directory="frontend/templates")
 
 settings = Settings()
@@ -63,7 +62,7 @@ for router in router_instances:
     router.session = session
     router.logger = logger
     router.statistics = statistics
-    app.include_router(router)
+    app.include_router(router, tags=[router.routes[0].name.split('_')[0]])
 # Timing middleware for debug purposes
 add_timing_middleware(app, record=logger.debug, prefix="app_timing", exclude="untimed")
 
