@@ -1,9 +1,8 @@
 import binascii
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
-
-from main import settings
 from routers import Router
+from common import config
 from common.prepare import prepare_request
 from common.crypto import encryption_enabled, decrypt
 
@@ -17,11 +16,11 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
         router.settings, request
     )
 
-    if settings.vulners_report_filter_enabled:
+    if config.vulners_report_filter_enabled:
         if "filter" in parameters:
-            parameters['filter']['tags'] = [settings.vulners_report_filter] + parameters['filter'].get('tags', [])
+            parameters['filter']['tags'] = [config.vulners_report_filter] + parameters['filter'].get('tags', [])
         else:
-            parameters['filter'] = {'tags': [settings.vulners_report_filter]}
+            parameters['filter'] = {'tags': [config.vulners_report_filter]}
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
