@@ -1,5 +1,6 @@
 import os
 import typing
+import logging
 
 
 def import_module(base_module, submodule):
@@ -41,4 +42,7 @@ class ModuleLoader:
             for obj in submodule.__dict__.values():
                 if isinstance(obj, instance_of):
                     classes.append(obj)
+                    break
+            else:
+                logging.warning(f"Could not find router in submodule `{submodule.__name__}`")
         return classes
