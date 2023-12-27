@@ -17,10 +17,13 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     )
 
     if config.vulners_report_filter_enabled:
-        if "filter" in parameters:
-            parameters['filter']['tags'] = [config.vulners_report_filter] + parameters['filter'].get('tags', [])
+        if "filter" in parameters and parameters["filter"]:
+            parameters["filter"]["tags"] = [config.vulners_report_filter] + parameters[
+                "filter"
+            ].get("tags", [])
         else:
-            parameters['filter'] = {'tags': [config.vulners_report_filter]}
+            parameters["filter"] = {"tags": [config.vulners_report_filter]}
+
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
@@ -31,7 +34,7 @@ async def reports_vulnsreport(request: Request) -> ORJSONResponse:
     vulners_response.read()
     vulners_results = vulners_response.json()
 
-    if encryption_enabled and vulners_results["result"] == 'OK':
+    if encryption_enabled and vulners_results["result"] == "OK":
         for report in vulners_results["data"].get("report", []):
             for key in ("agentip", "agentfqdn", "ipaddress", "fqdn"):
                 value = report.get(key)
