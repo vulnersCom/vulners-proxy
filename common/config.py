@@ -17,7 +17,7 @@ config.read(CONF_PATH)
 log_opts = config['logging']
 app_opts = config['app']
 vulners_api_key = config['vulners']['apikey']
-vulners_report_filter_enabled = config['vulners'].get('enablereportfilter', '0')
+vulners_report_filter_enabled = int(config['vulners'].get('enablereportfilter', '0'))
 vulners_report_filter = config['vulners'].get('reportfiltertag', '')
 
 log_file = log_opts.get('LogFile')
