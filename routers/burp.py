@@ -7,13 +7,37 @@ from common.prepare import prepare_cache_keys, prepare_request, merge_value_to_k
 
 router = Router()
 
+@router.api_route("/api/v3/burp/softwareapi/", methods=["GET", "POST"])
+async def burp_software(request: Request):
+    parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
+        router.settings, request
+    )
+    software_call_key = prepare_cache_keys(parameters.values())
+    cached_response = router.cache.get(software_call_key)
+    if not cached_response:
+        request = router.session.build_request(
+            method=request.method, url=endpoint_url, json=parameters, headers=request_headers
+        )
+        vulners_response = await router.session.send(request)
+        vulners_response.read()
+        vulners_results = vulners_response.json()
+        router.cache.set(
+            software_call_key, vulners_results, expire=router.settings.cache_timeout
+        )
+    else:
+        router.statistics[dispatcher] += 1
+        vulners_results = cached_response
+    return ORJSONResponse(
+        content=vulners_results,
+    )
+
 
 @router.api_route("/api/v3/burp/software/", methods=["GET", "POST"])
 async def burp_software(request: Request):
     parameters, request_headers, endpoint_url, dispatcher = await prepare_request(
         router.settings, request
     )
-    software_call_key = prepare_cache_keys(parameters)
+    software_call_key = prepare_cache_keys(parameters.values())
     cached_response = router.cache.get(software_call_key)
     if not cached_response:
         request = router.session.build_request(
