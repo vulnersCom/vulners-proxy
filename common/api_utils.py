@@ -22,7 +22,7 @@ async def get_api_key_info(cache, session, settings):
         vulners_request = session.build_request(
             method="GET",
             url=f"https://{settings.vulners_host}/api/v3/apiKey/info/",
-            params={"apiKey": settings.vulners_api_key},
+            headers={"X-API-KEY": settings.vulners_api_key},
         )
         vulners_response = await session.send(vulners_request)
         result = vulners_response.json()
@@ -38,29 +38,3 @@ async def get_api_key_info(cache, session, settings):
             f"Verify ApiKey option into `{os.path.join(*conf_catalog)}/vulners_proxy.conf` file",
         )
     return result["data"]
-
-
-async def get_cached_cost(cache, license_type, session, settings, statistics):
-    cost_data = cache.get(f"__{license_type}_costs")
-    if not cost_data:
-        vulners_request = session.build_request(
-            method="GET",
-            url=f"https://{settings.vulners_host}/api/v3/credit/get_requests_cost",
-        )
-        vulners_response = await session.send(vulners_request)
-        for license_costs in vulners_response.json()["data"]["costs"]:
-            if license_costs["license"] != license_type:
-                continue
-            cost_data = license_costs["costs"]
-            cache.set(
-                f"__{license_type}_costs", cost_data, expire=settings.api_cache_timeout
-            )
-            break
-        else:
-            raise VulnersProxyException(
-                "Invalid license", "Please contact us support@vulners.com"
-            )
-    result = 0
-    for endpoint, count in list(statistics.items()):
-        result += count * cost_data.get(endpoint, 0)
-    return result

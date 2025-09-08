@@ -12,7 +12,6 @@
             el('#error-title').innerText = r.error_title
             el('#error-msg').innerText = r.error_msg
 
-            el('#saved-credits').innerText = r.saved_credits
             el('#cache-size').innerText = r.cache_size_mb
             el('#credit').innerText = r.credit
 

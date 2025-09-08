@@ -1,15 +1,16 @@
 import argparse
+
 import uvicorn
 import routers
 import common.disk_cache as dc
 from typing import Union, Any
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_utils.timing import add_timing_middleware
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from starlette.background import BackgroundTask
 from common import __version__
 from common.prepare import prepare_request
@@ -18,7 +19,7 @@ from common.error import VulnersProxyException
 from common.config import logger, app_opts, vulners_api_key, \
     vulners_report_filter, vulners_report_filter_enabled
 from common.statistic import statistics
-from common.api_utils import check_api_connectivity, get_api_key_info, get_cached_cost
+from common.api_utils import check_api_connectivity, get_api_key_info
 from routers import Router
 from httpx_client import HttpXClient
 
@@ -73,20 +74,16 @@ async def root(request: Request):
 
 
 @app.get("/proxy/status")
-async def status() -> Union[dict, VulnersProxyException]:
+async def status() -> dict:
     try:
         api_key_info = await get_api_key_info(cache, session, settings)
-        saved_credits = await get_cached_cost(
-            cache, api_key_info.get("license_type"), session, settings, statistics
-        )
     except VulnersProxyException as err:
-        return err
+        raise HTTPException(status_code=500, detail=err.error_msg)
     return {
         "api_connectivity": check_api_connectivity(settings),
         "run_date": statistics.run_date,
         "statistic": statistics,
         "cache_size_mb": round(int(cache.volume() >> 10) / 1024, 2),
-        "saved_credits": saved_credits,
         **api_key_info,
     }
 

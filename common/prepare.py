@@ -20,11 +20,6 @@ async def prepare_request(settings, request: Request) -> tuple:
             parameters = {}
     else:
         parameters = get_parameters
-
-    merged_parameters = {}
-    if not any([key in request.query_params for key in ("api_key", "apiKey")]) and settings.vulners_api_key:
-        merged_parameters["apiKey"] = settings.vulners_api_key
-    merged_parameters.update(parameters)
     split_url = str(request.url).split(str(request.base_url))
     split_url[0] = f'https://{settings.vulners_host}'
     endpoint_url = "/".join(split_url)
@@ -37,7 +32,9 @@ async def prepare_request(settings, request: Request) -> tuple:
             if key.lower().startswith(("accept", "x-vulners"))
         }
     }
-    return merged_parameters, headers, endpoint_url, dispatcher
+    if settings.vulners_api_key:
+        headers["X-API-KEY"] = settings.vulners_api_key
+    return parameters, headers, endpoint_url, dispatcher
 
 
 def estimate_typed_value(value):
