@@ -1,4 +1,5 @@
 import concurrent.futures
+
 from diskcache import Cache as _Cache
 
 
@@ -6,15 +7,11 @@ class Cache(_Cache):
     def get_key(self, key, *args, **kwargs):
         return key, super().get(key, *args, **kwargs)
 
-    def get_many(
-        self, keys, default=None, read=False, expire_time=False, tag=False, retry=False
-    ):
+    def get_many(self, keys, default=None, read=False, expire_time=False, tag=False, retry=False):
         results = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             lookup_calls = [
-                executor.submit(
-                    self.get_key, key, default, read, expire_time, tag, retry
-                )
+                executor.submit(self.get_key, key, default, read, expire_time, tag, retry)
                 for key in keys
             ]
             for future in concurrent.futures.as_completed(lookup_calls):
@@ -27,9 +24,7 @@ class Cache(_Cache):
         operation_results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             lookup_calls = [
-                executor.submit(
-                    self.set, key, value, expire, read, tag, retry
-                )
+                executor.submit(self.set, key, value, expire, read, tag, retry)
                 for key, value in key_values.items()
             ]
             for future in concurrent.futures.as_completed(lookup_calls):

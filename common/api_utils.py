@@ -1,15 +1,14 @@
 import os.path
 import socket
-from common.config import logger, conf_catalog
+
+from common.config import conf_catalog, logger
 from common.error import VulnersProxyException
 
 
 def check_api_connectivity(settings):
     try:
         socket.setdefaulttimeout(3)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(
-            (settings.vulners_host, 443)
-        )
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((settings.vulners_host, 443))
         return True
     except socket.error as ex:
         logger.exception(ex)

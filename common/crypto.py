@@ -1,11 +1,11 @@
 import base64
 import socket
-from typing import Union
 from binascii import unhexlify
+from typing import Union
+
+from common.config import app_opts
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from httpx._models import Request
-from common.config import app_opts
-
 
 encryption_enabled = bool(int(app_opts.get("enableencryption")))
 key = base64.urlsafe_b64encode(app_opts.get("secret").ljust(32, "v").encode())[:32]
@@ -35,7 +35,9 @@ def decrypt(crypt_value: str) -> str:
     return (bytes(buf[:len_decrypted]) + decrypter.finalize()).decode().strip("\0")
 
 
-def encrypt_parameters(request: Request, parameters: dict, objects: Union[list, tuple] = None) -> dict:
+def encrypt_parameters(
+    request: Request, parameters: dict, objects: Union[list, tuple] = None
+) -> dict:
     if not objects:
         return parameters
     host = request.client.host
@@ -52,4 +54,3 @@ def encrypt_parameters(request: Request, parameters: dict, objects: Union[list, 
         if obj_param:
             parameters.update({obj: encrypt(obj_param)})
     return parameters
-

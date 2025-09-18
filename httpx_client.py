@@ -1,8 +1,9 @@
+import asyncio
 import ssl
+
 import httpcore
 import httpx
-import asyncio
-from common.config import logger, app_opts
+from common.config import app_opts, logger
 from common.error import VulnersProxyException
 
 
@@ -26,5 +27,5 @@ class HttpXClient(httpx.AsyncClient):
             logger.exception(err)
             raise VulnersProxyException(
                 "Api request timeout has been reached",
-                "Perhaps the request is too large, try increasing ApiRequestTimeout option in the config file"
+                "Perhaps the request is too large, try increasing ApiRequestTimeout option in the config file",
             )

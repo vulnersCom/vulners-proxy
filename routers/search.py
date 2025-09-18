@@ -1,7 +1,7 @@
+from common.prepare import merge_value_to_key, prepare_cache_keys, prepare_request
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
-from common.prepare import prepare_cache_keys, prepare_request, merge_value_to_key
 
 # search/id call local cache optimization
 
@@ -50,14 +50,14 @@ async def search_id(request: Request) -> ORJSONResponse:
             merge_value_to_key(document_id, fields): data
             for document_id, data in vulners_results.get("data").get("documents", {}).items()
         }
-        documents_cache_prepared.update({
-            merge_value_to_key(document_id, "references"): data
-            for document_id, data in vulners_results.get("data").get("references", {}).items()
-        })
-        # Combine to the one document
-        router.cache.set_many(
-            documents_cache_prepared, expire=router.settings.cache_timeout
+        documents_cache_prepared.update(
+            {
+                merge_value_to_key(document_id, "references"): data
+                for document_id, data in vulners_results.get("data").get("references", {}).items()
+            }
         )
+        # Combine to the one document
+        router.cache.set_many(documents_cache_prepared, expire=router.settings.cache_timeout)
     else:
         router.statistics[dispatcher] += 1
         vulners_results = {

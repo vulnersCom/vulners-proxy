@@ -1,11 +1,12 @@
+from common.prepare import merge_value_to_key, prepare_cache_keys, prepare_request
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
-from common.prepare import prepare_cache_keys, prepare_request, merge_value_to_key
 
 # search/id call local cache optimization
 
 router = Router()
+
 
 @router.api_route("/api/v3/burp/softwareapi/", methods=["GET", "POST"])
 async def burp_software(request: Request):
@@ -21,9 +22,7 @@ async def burp_software(request: Request):
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
-        router.cache.set(
-            software_call_key, vulners_results, expire=router.settings.cache_timeout
-        )
+        router.cache.set(software_call_key, vulners_results, expire=router.settings.cache_timeout)
     else:
         router.statistics[dispatcher] += 1
         vulners_results = cached_response
@@ -46,9 +45,7 @@ async def burp_software(request: Request):
         vulners_response = await router.session.send(request)
         vulners_response.read()
         vulners_results = vulners_response.json()
-        router.cache.set(
-            software_call_key, vulners_results, expire=router.settings.cache_timeout
-        )
+        router.cache.set(software_call_key, vulners_results, expire=router.settings.cache_timeout)
     else:
         router.statistics[dispatcher] += 1
         vulners_results = cached_response
@@ -75,11 +72,7 @@ async def burp_packages(request: Request):
     }
     cached_data = router.cache.get_many(software_keys)
     cached_packages = [software_keys[_] for _ in cached_data]
-    uncached_packages = [
-        package
-        for package in packages_list
-        if package not in cached_packages
-    ]
+    uncached_packages = [package for package in packages_list if package not in cached_packages]
     parameters["packages"] = uncached_packages
     if uncached_packages:
         # Perform minimized vulners request

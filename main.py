@@ -16,8 +16,13 @@ from common import __version__
 from common.prepare import prepare_request
 from common.loader import ModuleLoader
 from common.error import VulnersProxyException
-from common.config import logger, app_opts, vulners_api_key, \
-    vulners_report_filter, vulners_report_filter_enabled
+from common.config import (
+    logger,
+    app_opts,
+    vulners_api_key,
+    vulners_report_filter,
+    vulners_report_filter_enabled,
+)
 from common.statistic import statistics
 from common.api_utils import check_api_connectivity, get_api_key_info
 from routers import Router
@@ -36,7 +41,9 @@ class Settings(BaseSettings):
     def __init__(self, **values: Any):
         super().__init__(**values)
         if self.vulners_report_filter_enabled and not self.vulners_report_filter:
-            logger.warning("Report filter is enabled, but filter tag is not specified. Your reports will be empty")
+            logger.warning(
+                "Report filter is enabled, but filter tag is not specified. Your reports will be empty"
+            )
 
 
 templates = Jinja2Templates(directory="frontend/templates")
@@ -63,7 +70,7 @@ for router in router_instances:
     router.session = session
     router.logger = logger
     router.statistics = statistics
-    app.include_router(router, tags=[router.routes[0].name.split('_')[0]])
+    app.include_router(router, tags=[router.routes[0].name.split("_")[0]])
 # Timing middleware for debug purposes
 add_timing_middleware(app, record=logger.debug, prefix="app_timing", exclude="untimed")
 
@@ -95,9 +102,7 @@ async def status() -> dict:
 
 
 # Default fallback route that just transfers data to Vulners backend and back
-@app.api_route(
-    "/api/v3/{dispatcher}/{dispatch_method}/", methods=["GET", "POST", "HEAD"]
-)
+@app.api_route("/api/v3/{dispatcher}/{dispatch_method}/", methods=["GET", "POST", "HEAD"])
 async def fallback_translator(
     dispatcher: str, dispatch_method: str, request: Request
 ) -> StreamingResponse:

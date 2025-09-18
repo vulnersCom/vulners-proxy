@@ -1,10 +1,11 @@
 import ast
 import hashlib
-from fastapi import Request
-from common import __version__
-from common.config import logger
 from json.decoder import JSONDecodeError
 from urllib.parse import urlparse
+
+from common import __version__
+from common.config import logger
+from fastapi import Request
 
 
 async def prepare_request(settings, request: Request) -> tuple:
@@ -21,7 +22,7 @@ async def prepare_request(settings, request: Request) -> tuple:
     else:
         parameters = get_parameters
     split_url = str(request.url).split(str(request.base_url))
-    split_url[0] = f'https://{settings.vulners_host}'
+    split_url[0] = f"https://{settings.vulners_host}"
     endpoint_url = "/".join(split_url)
     dispatcher = ".".join(urlparse(str(request.url)).path.split("/")[-3:-1])
     headers = {
@@ -30,7 +31,7 @@ async def prepare_request(settings, request: Request) -> tuple:
             key: request.headers[key]
             for key in request.headers
             if key.lower().startswith(("accept", "x-vulners"))
-        }
+        },
     }
     if settings.vulners_api_key:
         headers["X-API-KEY"] = settings.vulners_api_key
@@ -79,6 +80,7 @@ def estimate_typed_value(value):
         elif isinstance(node, ast.List):
             return list(map(_convert, node.elts))
         raise ValueError("malformed node or string: " + repr(node))
+
     try:
         return _convert(value, initial_string)
     except Exception as err:
@@ -87,10 +89,7 @@ def estimate_typed_value(value):
 
 
 def prepare_cache_keys(keys: list, *args) -> dict:
-    return {
-        merge_value_to_key(key, *args): key
-        for key in keys
-    }
+    return {merge_value_to_key(key, *args): key for key in keys}
 
 
 def merge_value_to_key(*args) -> str:

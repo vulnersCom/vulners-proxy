@@ -1,10 +1,10 @@
+import logging
 import os
 import typing
-import logging
 
 
 def import_module(base_module, submodule):
-    module_name = base_module.__name__ + '.' + submodule
+    module_name = base_module.__name__ + "." + submodule
     return __import__(module_name, fromlist=[submodule])
 
 

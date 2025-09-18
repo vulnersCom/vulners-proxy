@@ -6,3 +6,4 @@ class Router(APIRouter):
     cache: NotImplemented
     session: NotImplemented
     logger: NotImplemented
+    statistics: NotImplemented

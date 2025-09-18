@@ -1,9 +1,8 @@
+from common.crypto import encrypt_parameters, encryption_enabled
+from common.prepare import prepare_request
 from fastapi import Request
 from fastapi.responses import ORJSONResponse
 from routers import Router
-from common.prepare import prepare_request
-from common.crypto import encryption_enabled, encrypt_parameters
-
 
 router = Router()
 
@@ -15,7 +14,7 @@ async def agent_update(request: Request) -> ORJSONResponse:
     )
 
     if encryption_enabled:
-        encrypt_parameters(request, parameters, objects=['ipaddress', 'fqdn', 'macaddress'])
+        encrypt_parameters(request, parameters, objects=["ipaddress", "fqdn", "macaddress"])
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
@@ -36,7 +35,7 @@ async def agent_register(request: Request) -> ORJSONResponse:
         router.settings, request
     )
     if encryption_enabled:
-        encrypt_parameters(request, parameters, objects=['ip'])
+        encrypt_parameters(request, parameters, objects=["ip"])
     request = router.session.build_request(
         method=request.method,
         url=endpoint_url,
